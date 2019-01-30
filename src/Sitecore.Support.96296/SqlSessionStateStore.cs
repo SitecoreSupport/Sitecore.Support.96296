@@ -374,7 +374,7 @@
         {
             using (SqlCommand command = new SqlCommand())
             {
-                command.CommandText = "SELECT [id] FROM [tempdb].[dbo].[SessionState] WHERE [id]=@id";
+                command.CommandText = "SELECT [id] FROM [dbo].[SessionState] WHERE [id]=@id";
                 command.CommandType = CommandType.Text;
                 SqlParameter parameter = new SqlParameter
                 {
