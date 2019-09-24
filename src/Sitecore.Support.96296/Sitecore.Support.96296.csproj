@@ -45,8 +45,9 @@
       <HintPath>..\packages\SC.Sitecore.Kernel.8.2.6\lib\Sitecore.Kernel.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Sitecore.SessionProvider">
-      <HintPath>..\..\..\..\inetpub\wwwroot\sc82update6\Website\bin\Sitecore.SessionProvider.dll</HintPath>
+    <Reference Include="Sitecore.SessionProvider, Version=10.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SC.Sitecore.SessionProvider.8.2.6\lib\Sitecore.SessionProvider.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
