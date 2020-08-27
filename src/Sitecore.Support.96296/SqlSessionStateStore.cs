@@ -56,66 +56,84 @@ namespace Sitecore.Support
         /// </exception>
         internal void InsertItem(Guid application, [NotNull] string id, int flags, [NotNull] SessionStateStoreData sessionState)
         {
-            Debug.ArgumentNotNull(id, "id");
-            Debug.ArgumentNotNull(sessionState, "sessionState");
-
-            byte[] data = SessionStateSerializer.Serialize(sessionState, this.m_Compress);
-
-            using (SqlCommand command = new SqlCommand())
+            try
             {
-                command.CommandText = "[dbo].[InsertItem]";
-                command.CommandType = CommandType.StoredProcedure;
+                Debug.ArgumentNotNull(id, "id");
+                Debug.ArgumentNotNull(sessionState, "sessionState");
 
-                SqlParameter paramApplication = new SqlParameter
+                byte[] data = SessionStateSerializer.Serialize(sessionState, this.m_Compress);
+
+                using (SqlCommand command = new SqlCommand())
                 {
-                    ParameterName = "@application",
-                    SqlDbType = SqlDbType.UniqueIdentifier,
-                    Value = application
-                };
+                    command.CommandText = "[dbo].[InsertItem]";
+                    command.CommandType = CommandType.StoredProcedure;
 
-                SqlParameter paramId = new SqlParameter
-                {
-                    ParameterName = "@id",
-                    SqlDbType = SqlDbType.NVarChar,
-                    Size = 88,
-                    Value = id
-                };
+                    SqlParameter paramApplication = new SqlParameter
+                    {
+                        ParameterName = "@application",
+                        SqlDbType = SqlDbType.UniqueIdentifier,
+                        Value = application
+                    };
 
-                SqlParameter paramItem = new SqlParameter
-                {
-                    ParameterName = "@item",
-                    SqlDbType = SqlDbType.Image,
-                    Value = data
-                };
+                    SqlParameter paramId = new SqlParameter
+                    {
+                        ParameterName = "@id",
+                        SqlDbType = SqlDbType.NVarChar,
+                        Size = 88,
+                        Value = id
+                    };
 
-                SqlParameter paramTimeout = new SqlParameter
-                {
-                    ParameterName = "@timeout",
-                    SqlDbType = SqlDbType.Int,
-                    Value = sessionState.Timeout
-                };
+                    SqlParameter paramItem = new SqlParameter
+                    {
+                        ParameterName = "@item",
+                        SqlDbType = SqlDbType.Image,
+                        Value = data
+                    };
 
-                SqlParameter paramFlags = new SqlParameter
-                {
-                    ParameterName = "@flags",
-                    SqlDbType = SqlDbType.Int,
-                    Value = flags
-                };
+                    SqlParameter paramTimeout = new SqlParameter
+                    {
+                        ParameterName = "@timeout",
+                        SqlDbType = SqlDbType.Int,
+                        Value = sessionState.Timeout
+                    };
 
-                command.Parameters.Add(paramApplication);
-                command.Parameters.Add(paramId);
-                command.Parameters.Add(paramItem);
-                command.Parameters.Add(paramTimeout);
-                command.Parameters.Add(paramFlags);
+                    SqlParameter paramFlags = new SqlParameter
+                    {
+                        ParameterName = "@flags",
+                        SqlDbType = SqlDbType.Int,
+                        Value = flags
+                    };
 
-                using (SqlConnection connection = new SqlConnection(this.m_ConnectionString))
-                {
-                    connection.Open();
+                    command.Parameters.Add(paramApplication);
+                    command.Parameters.Add(paramId);
+                    command.Parameters.Add(paramItem);
+                    command.Parameters.Add(paramTimeout);
+                    command.Parameters.Add(paramFlags);
 
-                    command.Connection = connection;
+                    using (SqlConnection connection = new SqlConnection(this.m_ConnectionString))
+                    {
+                        connection.Open();
 
-                    command.ExecuteNonQuery();
+                        command.Connection = connection;
+
+                        command.ExecuteNonQuery();
+                    }
                 }
+            }
+            catch (SqlException ex)
+            {
+                if (ex.Number == 2601 || ex.Number == 2627)
+                {
+                    Log.Info("Attempting to insert a duplicate key into the SQL Session Store. Entry skipped. " + ex.Message, this);
+                }
+                else
+                {
+                    Log.Error(ex.Message, ex);
+                }
+            }
+            catch (Exception arg)
+            {
+                Log.Error("Sitecore.Support.96296: " + arg, this);
             }
         }
 
